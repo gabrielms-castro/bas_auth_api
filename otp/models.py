@@ -1,10 +1,13 @@
 import pyotp
 import re
 import uuid
+import logging
 
 from django.db import models
 from django.core.exceptions import ValidationError
 
+# Configuração de logs
+logger = logging.getLogger(__name__)
 
 def validate_base32_key(value):
     """
@@ -16,7 +19,7 @@ def validate_base32_key(value):
 
 class Keys(models.Model):
     """
-    Armazenar chaves TOTP associadas a serviços.
+    Armazena chaves TOTP associadas a serviços.
     """
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -46,21 +49,32 @@ class Keys(models.Model):
     
     def generate_totp(self):
         """
-        Gera o código TOTP baseada na chave armazenada
+        Gera o código TOTP baseado na chave armazenada
         """
-        return self.totp.now()
+        try:
+            totp_code = self.totp.now()
+            logger.info(f"TOTP gerado para o serviço '{self.nome_servico}': {totp_code}")
+            return totp_code
+        except Exception as e:
+            logger.error(f"Erro ao gerar TOTP para o serviço '{self.nome_servico}': {e}")
+            raise e
     
     def verify_totp(self, code):
         """
-        Verifica a validade do código TOTP fornecido é válido
+        Verifica a validade do código TOTP fornecido
         """
-        return self.totp.verify(code)
+        try:
+            is_valid = self.totp.verify(code)
+            logger.info(f"Verificação de TOTP para o serviço '{self.nome_servico}': {'válido' if is_valid else 'inválido'}")
+            return is_valid
+        except Exception as e:
+            logger.error(f"Erro ao verificar TOTP para o serviço '{self.nome_servico}': {e}")
+            return False
     
     def save(self, *args, **kwargs):
         """
         Sobrescreve o método save para remover espaços em branco da chave antes de salvar.
         """
         if self.key:
-            # Remove espaços em branco antes de salvar
             self.key = self.key.replace(" ", "")
-        super().save(*args, **kwargs)    
+        super().save(*args, **kwargs)
