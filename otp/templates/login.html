@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAS Auth - Login</title>
+    <title>Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         form {
-            max-width: 300px;
-            margin: auto;
+            width: 300px;
             padding: 20px;
             background: #ffffff;
             border: 1px solid #dee2e6;
@@ -23,13 +26,15 @@
         h1 {
             text-align: center;
             color: #343a40;
+            margin-bottom: 20px;
         }
         label {
             display: block;
             margin-bottom: 5px;
             color: #495057;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"],
+        input[type="password"] {
             width: calc(100% - 20px);
             margin-bottom: 15px;
             padding: 10px;
@@ -38,20 +43,19 @@
             font-size: 14px;
         }
         button {
-            margin-top: 15px;
             width: 100%;
             padding: 10px;
             border: none;
             border-radius: 5px;
             background-color: #007bff;
             color: #ffffff;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
         }
         button:hover {
             background-color: #0056b3;
         }
-        p.error {
+        p {
             color: red;
             text-align: center;
             margin-bottom: 15px;
@@ -59,11 +63,11 @@
     </style>
 </head>
 <body>
-    <h1>Login</h1>
     <form method="post">
+        <h1>Login</h1>
         {% csrf_token %}
         {% if error %}
-            <p style="color: red;">{{ error }}</p>
+            <p>{{ error }}</p>
         {% endif %}
         <label for="username">Usuário:</label>
         <input type="text" name="username" id="username" required>
