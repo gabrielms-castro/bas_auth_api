@@ -1,26 +1,17 @@
-"""
-URL configuration for app project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
+from otp.views import home_page, login_view, logout_view
 
 urlpatterns = [
+    # Administração
     path("admin/", admin.site.urls),
-    
-    path("api/v1/", include("otp.urls")),
-    path("api/v1/", include("authentication.urls")),
+
+    # Autenticação e Views principais
+    path("", login_view, name="login"),  # Página inicial/login
+    path("home/", home_page, name="home"),  # Página principal do usuário logado
+    path("logout/", logout_view, name="logout"),  # Logout do usuário
+
+    # APIs
+    path("api/v1/", include("otp.urls")),  # Rotas do app OTP na API
+    path("api/v1/", include("authentication.urls")),  # Rotas de autenticação na API
 ]

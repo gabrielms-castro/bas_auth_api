@@ -5,9 +5,12 @@ import logging
 
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 
 # Configuração de logs
 logger = logging.getLogger(__name__)
+
 
 def validate_base32_key(value):
     """
@@ -21,8 +24,8 @@ class Keys(models.Model):
     """
     Armazena chaves TOTP associadas a serviços.
     """
-    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="keys")
     nome_servico = models.CharField(max_length=100, verbose_name="Nome do Serviço")
     key = models.CharField(
         max_length=100,

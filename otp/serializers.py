@@ -6,8 +6,6 @@ class GenerateTOTPSerializer(serializers.Serializer):
     """
     
     nome_servico = serializers.CharField(max_length=100)
-    usuario = serializers.CharField(max_length=100)
-    senha = serializers.CharField(max_length=100)
     
     def validate_nome_servico(self, value):
         """

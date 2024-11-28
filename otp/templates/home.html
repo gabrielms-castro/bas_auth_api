@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAS Auth - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #343a40;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .center-button {
+            margin: 0 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .button_logout {
+            background-color: #ff355a;
+        }
+        .button_logout:hover {
+            background-color: #c80839;
+        }
+        .button_edit {
+            background-color: #17a2b8;
+        }
+        .button_edit:hover {
+            background-color: #117a8b;
+        }
+        .button_delete {
+            background-color: #dc3545;
+        }
+        .button_delete:hover {
+            background-color: #a71d2a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bem-vindo, {{ user.username }}</h1>
+    <div class="header-buttons">
+        <a href="{% url 'otp:novo_servico' %}">
+            <button type="button">Cadastrar Novo Serviço</button>
+        </a>
+        <button type="button" class="center-button" onclick="location.reload();">Atualizar Página</button>
+        <a href="{% url 'logout' %}">
+            <button class="button_logout">Logout</button>
+        </a>
+    </div>
+    <ul>
+        {% for service in services %}
+            <li>
+                <span>
+                    <strong>Serviço:</strong> {{ service.nome_servico }}
+                    <br>
+                    <strong>Código:</strong> <span id="code-{{ service.nome_servico }}">{{ service.totp_code }}</span>
+                </span>
+                <div>
+                    <a href="{% url 'otp:editar_servico' service.id %}">
+                        <button class="button_edit">Editar</button>
+                    </a>
+                    <button class="button_delete" onclick="deleteService('{{ service.id }}')">Deletar</button>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    <script>
+        function deleteService(serviceId) {
+            if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
+
+            fetch(`/api/v1/excluir-servico/${serviceId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Serviço excluído com sucesso!");
+                    location.reload();
+                } else {
+                    alert("Erro ao excluir o serviço.");
+                }
+            })
+            .catch(error => console.error("Erro ao excluir:", error));
+        }
+    </script>
+</body>
+</html>

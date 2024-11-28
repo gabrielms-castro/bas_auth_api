@@ -52,7 +52,7 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -65,8 +65,17 @@ TEMPLATES = [
     },
 ]
 
+LOGIN_URL = "/"
+LOGIN_REDIRECT_URL = "/home/"  # Redirecionamento após login bem-sucedido
+LOGOUT_REDIRECT_URL = "/"  # Redirecionamento após logout
+
 WSGI_APPLICATION = "app.wsgi.application"
 
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -126,6 +135,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 SIMPLE_JWT = {
@@ -136,3 +148,4 @@ SIMPLE_JWT = {
 TIME_ZONE = "America/Sao_Paulo"
 
 USE_TZ = True
+

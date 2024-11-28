@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAS Auth - Novo Serviço</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        input[type="text"] {
+            width: calc(100% - 20px);
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.button_cancel {
+            background-color: #ff355a;
+        }
+        button.button_cancel:hover {
+            background-color: #c80839;
+        }
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastrar Novo Serviço</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <label for="nome_servico">Nome do Serviço:</label>
+        <input type="text" name="nome_servico" id="nome_servico" value="{{ nome_servico }}" required>
+        
+        <label for="key">Chave Base32:</label>
+        <input type="text" name="key" id="key" value="{{ key }}" required>
+        
+        <button type="submit">Cadastrar</button>
+        <a href="{% url 'home' %}">
+            <button type="button" class="button_cancel">Cancelar</button>
+        </a>
+    </form>
+    
+</body>
+</html>
