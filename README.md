@@ -123,6 +123,50 @@ Os usuários podem criar, editar e excluir serviços, além de gerar códigos TO
 3. Configure o WSGI para apontar para o arquivo `wsgi.py` do Django.
 4. Reinicie o aplicativo na interface do PythonAnywhere.
 
+
+## Exemplo de Client em Python:
+```py
+class AuthClient:
+    def __init__(self):
+        self.__user = os.getenv("USUARIO")
+        self.__password = os.getenv("SENHA")
+        self.__base_url = ""
+        self.__token = self.get_refresh_token()
+    
+    def get_refresh_token(self):
+        endpoint = "/token/"
+        payload = {"username":self.__user, "password":self.__password}
+        try:
+            response = requests.post(
+                url=f"{self.__base_url}{endpoint}",
+                data=payload
+            )
+            response.raise_for_status()
+            return response.json().get("access")
+        except requests.exceptions.RequestException as e:
+            return f"Erro ao acessar a API: {e}"
+        except ValueError:
+            return "Erro ao processar a resposta da API."            
+
+    def get_totp(self, nome_servico, endpoint="totp/"):
+        payload = {
+            "nome_servico": nome_servico,
+        }
+        url = f"{self.__base_url}{endpoint}"
+        headers = {"Authorization": f"Bearer {self.__token}"}
+
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            return response.json().get("totp_code")
+        
+        except requests.exceptions.RequestException as e:
+            return f"Erro ao acessar a API: {e}"
+        
+        except ValueError:
+            return "Erro ao processar a resposta da API."
+```
+
 ---
 
 ## Licença
