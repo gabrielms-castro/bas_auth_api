@@ -6,6 +6,7 @@
 BAS Auth API é uma aplicação Django que permite o gerenciamento de códigos TOTP (Time-based One-Time Password) para diferentes serviços. 
 Os usuários podem criar, editar e excluir serviços, além de gerar códigos TOTP automaticamente, com suporte para integração via API.
 
+![Client/Server Flow](/docs/flow.png)
 ---
 
 ## Funcionalidades
