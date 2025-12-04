@@ -110,7 +110,8 @@ Os usuários podem criar, editar e excluir serviços, além de gerar códigos TO
   **Resposta**:
   ```json
   {
-      "totp_code": "123456"
+      "totp_code": "123456",
+      "time_left": 30
   }
   ```
 
@@ -120,8 +121,8 @@ Os usuários podem criar, editar e excluir serviços, além de gerar códigos TO
 
 1. Faça upload dos arquivos do projeto.
 2. Configure o ambiente virtual e instale as dependências.
-3. Configure o WSGI para apontar para o arquivo `wsgi.py` do Django.
-4. Reinicie o aplicativo na interface do PythonAnywhere.
+3. Configure o WSGI.
+4. Reinicie o aplicativo na interface do Python Anywhere.
 
 
 ## Exemplo de Client em Python:
@@ -166,7 +167,13 @@ class AuthClient:
         except ValueError:
             return "Erro ao processar a resposta da API."
 ```
+---
 
+## Updates
+04/12/2025: 
+* Corrigido problemas de segurança no Django (atualizado para última versão)
+* Implementado encrypt e decrypt no banco de dados da chave TOTP (aquela base32 que gera o código)
+* Adicionado barra de progressão (admito que vibecodei isso, não sei front-end xD)
 ---
 
 ## Licença
