@@ -172,18 +172,18 @@
         }
 
         function startTimer(serviceElement) {
-            const timerElement   = serviceElement.querySelector('.timer');
-            const codeElement    = serviceElement.querySelector('.totp-code');
-            const progressFill   = serviceElement.querySelector('.progress-fill');
-            const serviceName    = serviceElement.dataset.serviceName;
+            const timerElement = serviceElement.querySelector('.timer');
+            const codeElement = serviceElement.querySelector('.totp-code');
+            const progressFill = serviceElement.querySelector('.progress-fill');
+            const serviceName = serviceElement.dataset.serviceName;
 
             // Pegamos o time_left inicial do dataset (vindo do backend)
             let initialTimeLeft = parseFloat(timerElement.dataset.timeLeft || TOTP_INTERVAL);
             let startTime = performance.now(); // mais preciso que Date.now()
 
             async function tick(now) {
-                const elapsed   = (now - startTime) / 1000;
-                let timeLeft    = initialTimeLeft - elapsed;
+                const elapsed = (now - startTime) / 1000;
+                let timeLeft = initialTimeLeft - elapsed;
 
                 if (timeLeft <= 0) {
                     // Bateu em 0 -> busca novo TOTP
