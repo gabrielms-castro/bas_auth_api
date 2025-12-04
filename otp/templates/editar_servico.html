@@ -71,10 +71,10 @@
             <p style="color: red;">{{ error }}</p>
         {% endif %}
         <label for="nome_servico">Nome do Serviço:</label>
-        <input type="text" name="nome_servico" id="nome_servico" value="{{ key.nome_servico }}" required>
+        <input type="text" name="nome_servico" id="nome_servico" value="{{ nome_servico }}" required>
         
         <label for="key">Chave Base32:</label>
-        <input type="text" name="key" id="key" value="{{ key.key }}" required>
+        <input type="text" name="key" id="key" value="{{ key }}" required>
         
         <button type="submit">Salvar Alterações</button>
         <a href="{% url 'home' %}">

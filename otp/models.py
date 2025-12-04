@@ -1,23 +1,15 @@
+from otp.crypto import decrypt
 import pyotp
 import re
 import uuid
 import logging
 
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 
 # Configuração de logs
 logger = logging.getLogger(__name__)
-
-
-def validate_base32_key(value):
-    """
-    Valida se o valor fornecido está no formato Base32 válido.
-    """
-    if not re.fullmatch(r"[A-Z2-7]+", value.replace(" ", "")):
-        raise ValidationError("A chave TOTP deve estar no formato Base32 (Apenas letras de A-Z e dígitos 2-7).")
 
 
 class Keys(models.Model):
@@ -28,10 +20,9 @@ class Keys(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="keys")
     nome_servico = models.CharField(max_length=100, verbose_name="Nome do Serviço")
     key = models.CharField(
-        max_length=100,
+        max_length=255,
         verbose_name="Chave TOTP",
         help_text="Chave secreta de 32 caracteres",
-        validators=[validate_base32_key],
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")
     
@@ -48,16 +39,25 @@ class Keys(models.Model):
         """
         Inicializa o objeto TOTP apenas uma vez
         """
-        return pyotp.TOTP(self.key)
+        try:
+            return pyotp.TOTP(decrypt(self.key))
+        except Exception as e:
+            logger.error(f"Erro ao inicializar TOTP para '{self.nome_servico}': {e}")
+            return None
     
     def generate_totp(self):
         """
         Gera o código TOTP baseado na chave armazenada
         """
         try:
+            if not self.totp:
+                raise ValueError("Chave TOTP inválida ou não inicializada")
+            
             totp_code = self.totp.now()
             logger.info(f"TOTP gerado para o serviço '{self.nome_servico}': {totp_code}")
+
             return totp_code
+        
         except Exception as e:
             logger.error(f"Erro ao gerar TOTP para o serviço '{self.nome_servico}': {e}")
             raise e

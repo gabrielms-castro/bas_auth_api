@@ -1,19 +1,20 @@
 from datetime import datetime
 
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.forms import ValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.shortcuts import redirect, render, get_object_or_404
+
+from otp.crypto import decrypt, encrypt
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Keys
 from .serializers import GenerateTOTPSerializer
 
 
-# Configuração de logs
 import logging
 logger = logging.getLogger(__name__)
 
@@ -43,17 +44,19 @@ def novo_servico(request):
         nome_servico = request.POST.get("nome_servico")
         key = request.POST.get("key")
         try:
-            # Valida e salva o novo serviço
-            new_key = Keys(user=request.user, nome_servico=nome_servico, key=key)
-            new_key.full_clean()  # Valida o modelo, incluindo o Base32
+            new_key = Keys(user=request.user, nome_servico=nome_servico, key=encrypt(key))
+            new_key.full_clean()
             new_key.save()
             return redirect("home")
         except ValidationError as e:
-            # Retorna o erro ao template
             return render(request, "novo_servico.html", {
                 "error": e.message_dict.get("key", ["Erro desconhecido"])[0],
                 "nome_servico": nome_servico,
                 "key": key,
+            })
+        except Exception as e:
+            return render(request, "novo_servico.html", {
+                "error": e.message_dict.get("key", ["Erro desconhecido"])[0]
             })
 
     return render(request, "novo_servico.html")
@@ -61,25 +64,29 @@ def novo_servico(request):
 @login_required
 def editar_servico(request, pk):
     key_instance = Keys.objects.get(pk=pk, user=request.user)
+    
     if request.method == "POST":
         nome_servico = request.POST.get("nome_servico")
         key = request.POST.get("key")
+
         try:
-            # Atualiza e valida o serviço
             key_instance.nome_servico = nome_servico
-            key_instance.key = key
-            key_instance.full_clean()  # Valida o modelo
+            key_instance.key = encrypt(key)
+            key_instance.full_clean()
             key_instance.save()
+
             return redirect("home")
         
         except ValidationError as e:
-            # Retorna o erro ao template
             return render(request, "editar_servico.html", {
                 "key": key_instance,
                 "error": e.message_dict.get("key", ["Erro desconhecido"])[0],
             })
 
-    return render(request, "editar_servico.html", {"key": key_instance})
+    return render(request, "editar_servico.html", {
+        "nome_servico": key_instance.nome_servico,
+        "key": decrypt(key_instance.key)
+    })
 
 
 @login_required
@@ -124,3 +131,4 @@ class GenerateTOTP(APIView):
         except Exception as e:
             logger.error(f"Erro ao gerar TOTP: {e}")
             return Response({"error": "Erro ao gerar o TOTP."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
