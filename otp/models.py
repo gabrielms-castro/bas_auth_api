@@ -24,7 +24,8 @@ class Keys(models.Model):
         verbose_name="Chave TOTP",
         help_text="Chave secreta de 32 caracteres",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data da criação")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Data da última alteração")
     
     class Meta:
         verbose_name = "Chave TOTP"
