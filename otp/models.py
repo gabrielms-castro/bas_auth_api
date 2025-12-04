@@ -1,3 +1,4 @@
+from datetime import datetime
 from otp.crypto import decrypt
 import pyotp
 import re
@@ -45,6 +46,17 @@ class Keys(models.Model):
         except Exception as e:
             logger.error(f"Erro ao inicializar TOTP para '{self.nome_servico}': {e}")
             return None
+    
+    @property
+    def time_left(self):
+        totp = self.totp
+        
+        if not totp:
+            return 0
+        
+        interval = totp.interval
+
+        return interval - int((datetime.now().timestamp()) % interval)
     
     def generate_totp(self):
         """

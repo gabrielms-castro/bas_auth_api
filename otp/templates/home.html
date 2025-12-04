@@ -69,6 +69,29 @@
         .button_delete:hover {
             background-color: #a71d2a;
         }
+        .timer {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .timer.warning {
+            color: #ffc107;
+        }
+        .timer.danger {
+            color: #dc3545;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 1s linear;
+        }
     </style>
 </head>
 <body>
@@ -84,11 +107,16 @@
     </div>
     <ul>
         {% for service in services %}
-            <li>
+            <li data-service-name="{{ service.nome_servico }}">
                 <span>
                     <strong>Serviço:</strong> {{ service.nome_servico }}
                     <br>
-                    <strong>Código:</strong> <span id="code-{{ service.nome_servico }}">{{ service.totp_code }}</span>
+                    <strong>Código:</strong> <span class="totp-code">{{ service.totp_code }}</span>
+                    <br>
+                    <span class="timer" data-time-left="{{ service.time_left }}">{{ service.time_left }}s</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
                 </span>
                 <div>
                     <a href="{% url 'otp:editar_servico' service.id %}">
@@ -99,7 +127,10 @@
             </li>
         {% endfor %}
     </ul>
+
     <script>
+        const TOTP_INTERVAL = 30; // segundos
+
         function deleteService(serviceId) {
             if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
 
@@ -119,6 +150,80 @@
             })
             .catch(error => console.error("Erro ao excluir:", error));
         }
+
+        async function refreshTOTP(serviceName) {
+            try {
+                const response = await fetch('/api/v1/totp/', {
+                    method: 'POST', // garanta que é o mesmo método que seu backend espera
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ "nome_servico": serviceName })
+                });
+                if (!response.ok) throw new Error('Erro ao buscar TOTP');
+                
+                const data = await response.json();
+                return data; // espera-se { totp_code, time_left }
+            } catch (error) {
+                console.error('Erro ao atualizar TOTP:', error);
+                return null;
+            }
+        }
+
+        function startTimer(serviceElement) {
+            const timerElement   = serviceElement.querySelector('.timer');
+            const codeElement    = serviceElement.querySelector('.totp-code');
+            const progressFill   = serviceElement.querySelector('.progress-fill');
+            const serviceName    = serviceElement.dataset.serviceName;
+
+            // Pegamos o time_left inicial do dataset (vindo do backend)
+            let initialTimeLeft = parseFloat(timerElement.dataset.timeLeft || TOTP_INTERVAL);
+            let startTime = performance.now(); // mais preciso que Date.now()
+
+            async function tick(now) {
+                const elapsed   = (now - startTime) / 1000;
+                let timeLeft    = initialTimeLeft - elapsed;
+
+                if (timeLeft <= 0) {
+                    // Bateu em 0 -> busca novo TOTP
+                    const newData = await refreshTOTP(serviceName);
+                    if (!newData) {
+                        // Se falhar, pode tentar recarregar a página ou apenas parar
+                        location.reload();
+                        return;
+                    }
+
+                    // Atualiza código e reinicia o ciclo com novo time_left
+                    codeElement.textContent             = newData.totp_code;
+                    initialTimeLeft                     = parseFloat(newData.time_left || TOTP_INTERVAL);
+                    timerElement.dataset.timeLeft       = initialTimeLeft;
+                    startTime                           = performance.now();
+                    timeLeft                            = initialTimeLeft;
+                }
+
+                // Atualiza texto do timer (arredondado)
+                const displaySeconds = Math.max(0, Math.ceil(timeLeft));
+                timerElement.textContent = `${displaySeconds}s`;
+
+                // Atualiza barra de progresso (fluida)
+                const clampedTime = Math.max(0, Math.min(TOTP_INTERVAL, timeLeft));
+                const percentage  = (clampedTime / TOTP_INTERVAL) * 100;
+                progressFill.style.width = `${percentage}%`;
+
+                // Chama o próximo frame
+                requestAnimationFrame(tick);
+            }
+
+            // Inicia o loop
+            requestAnimationFrame(tick);
+        }
+
+        // Inicializar timers quando a página carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            const services = document.querySelectorAll('li[data-service-name]');
+            services.forEach(service => startTimer(service));
+        });
     </script>
-</body>
+    </body>
 </html>

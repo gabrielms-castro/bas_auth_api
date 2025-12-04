@@ -104,8 +104,8 @@ def home_page(request):
             "id": key.id,
             "nome_servico": key.nome_servico,
             "totp_code": key.generate_totp(),
-            "time_left": key.totp.interval - (datetime.now().timestamp() % key.totp.interval),
-            "fetch_url": "/api/v1/totp/"  # URL da API para gerar o código
+            "time_left": key.time_left,
+            "fetch_url": "/api/v1/totp/"
         }
         for key in keys
     ]
@@ -126,9 +126,9 @@ class GenerateTOTP(APIView):
 
         try:
             totp_code = key_instance.generate_totp()
-            return Response({"totp_code": totp_code}, status=status.HTTP_200_OK)
+            time_left = key_instance.time_left
+            return Response({"totp_code": totp_code, "time_left":time_left}, status=status.HTTP_200_OK)
         
         except Exception as e:
             logger.error(f"Erro ao gerar TOTP: {e}")
             return Response({"error": "Erro ao gerar o TOTP."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
