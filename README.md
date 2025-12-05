@@ -173,7 +173,7 @@ class AuthClient:
 04/12/2025: 
 * Corrigido problemas de segurança no Django (atualizado para última versão)
 * Implementado encrypt e decrypt no banco de dados da chave TOTP (aquela base32 que gera o código)
-* Adicionado barra de progressão (admito que vibecodei isso, não sei front-end xD)
+* Adicionado barra de progressão e alterado alguns icons (admito que vibecodei isso, não sei front-end xD)
 ---
 
 ## Licença
